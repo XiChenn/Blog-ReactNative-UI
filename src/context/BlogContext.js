@@ -1,8 +1,11 @@
 import createDataContext from './createDataContext';
 import _ from 'lodash';
+import jsonServer from '../api/jsonServer';
 
 const blogReducer = (state, action) => {
     switch (action.type) {
+        case 'get_blogposts':
+            return {..._.mapKeys(action.payload, 'id')}
         case 'delete_blogpost':
             return _.omit(state, action.payload);
         case 'add_blogpost':  
@@ -15,6 +18,13 @@ const blogReducer = (state, action) => {
         default:
             return state;
     }
+};
+
+const getBlogPosts = dispatch => {
+    return async () => {
+        const response = await jsonServer.get('/posts');
+        dispatch({ type: 'get_blogposts', payload: response.data });
+    };
 };
 
 const addBlogPost = dispatch => {
@@ -43,9 +53,6 @@ const deleteBlogPost = dispatch => id => dispatch({ type: 'delete_blogpost', pay
 
 export const { Context, Provider } = createDataContext(
     blogReducer,
-    { addBlogPost, editBlogPost, deleteBlogPost },
-    {
-        '1': {id: '1', title: 'test blog title 1', content: 'Today is cold'},
-        '2': {id: '2', title: 'test blog title 2', content: 'Today is hot'}
-    }
+    { addBlogPost, editBlogPost, deleteBlogPost, getBlogPosts },
+    {}
 );
