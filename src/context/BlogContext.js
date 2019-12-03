@@ -5,22 +5,47 @@ const blogReducer = (state, action) => {
     switch (action.type) {
         case 'delete_blogpost':
             return _.omit(state, action.payload);
-        case 'add_blogpost':
-            const id = (Math.floor(Math.random() * 99999)).toString();
-            return { ...state, [id]: {id, title: `Post ${id}`} };
+        case 'add_blogpost':  
+            const newId = (Math.floor(Math.random() * 99999)).toString();
+            return { ...state, [newId]: {id: newId, title: action.payload.title, content: action.payload.content} };
+        case 'edit_blogPost': {
+            const { id, title, content } = action.payload;
+            return { ...state, [id]: { id, title, content } };
+        }
         default:
             return state;
     }
 };
 
 const addBlogPost = dispatch => {
-    return () => dispatch({ type: 'add_blogpost' });
+    return (title, content, callback) => {
+        dispatch({ type: 'add_blogpost', payload: {title, content} });
+
+        if (callback) {
+            callback();
+        }
+    }
+};
+
+const editBlogPost = dispatch => {
+    return (id, title, content, callback) => {
+        console.log(id);
+        console.log(title);
+        dispatch({ type: 'edit_blogPost', payload: {id, title, content} });
+
+        if (callback) {
+            callback();
+        }
+    }
 };
 
 const deleteBlogPost = dispatch => id => dispatch({ type: 'delete_blogpost', payload: id });
 
 export const { Context, Provider } = createDataContext(
     blogReducer,
-    { addBlogPost, deleteBlogPost },
-    {}
+    { addBlogPost, editBlogPost, deleteBlogPost },
+    {
+        '1': {id: '1', title: 'test blog title 1', content: 'Today is cold'},
+        '2': {id: '2', title: 'test blog title 2', content: 'Today is hot'}
+    }
 );
