@@ -8,9 +8,6 @@ const blogReducer = (state, action) => {
             return {..._.mapKeys(action.payload, 'id')}
         case 'delete_blogpost':
             return _.omit(state, action.payload);
-        case 'add_blogpost':  
-            const newId = (Math.floor(Math.random() * 99999)).toString();
-            return { ...state, [newId]: {id: newId, title: action.payload.title, content: action.payload.content} };
         case 'edit_blogPost': {
             const { id, title, content } = action.payload;
             return { ...state, [id]: { id, title, content } };
@@ -28,8 +25,8 @@ const getBlogPosts = dispatch => {
 };
 
 const addBlogPost = dispatch => {
-    return (title, content, callback) => {
-        dispatch({ type: 'add_blogpost', payload: {title, content} });
+    return async (title, content, callback) => {
+        await jsonServer.post('/posts', { title, content })
 
         if (callback) {
             callback();
@@ -38,9 +35,9 @@ const addBlogPost = dispatch => {
 };
 
 const editBlogPost = dispatch => {
-    return (id, title, content, callback) => {
-        console.log(id);
-        console.log(title);
+    return async (id, title, content, callback) => {
+        await jsonServer.put(`/posts/${id}`, { id, title, content });
+
         dispatch({ type: 'edit_blogPost', payload: {id, title, content} });
 
         if (callback) {
@@ -49,7 +46,12 @@ const editBlogPost = dispatch => {
     }
 };
 
-const deleteBlogPost = dispatch => id => dispatch({ type: 'delete_blogpost', payload: id });
+const deleteBlogPost = dispatch => {
+    return async (id) => {
+        await jsonServer.delete(`/posts/${id}`);
+        dispatch({ type: 'delete_blogpost', payload: id });
+    }
+}
 
 export const { Context, Provider } = createDataContext(
     blogReducer,

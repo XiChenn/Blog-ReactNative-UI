@@ -10,6 +10,12 @@ const IndexScreen = ({ navigation }) => {
 
     useEffect(() => {
         getBlogPosts();
+        const listner = navigation.addListener('didFocus', () => getBlogPosts());
+
+        // Remove the listen when the componet is detroyed - avoid memory leak
+        return () => {
+            listner.remove();
+        };
     }, []);
 
     return (
